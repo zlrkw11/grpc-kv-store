@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+package kvstore.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/rayzhao/grpc-kv-store/pkg/kvstore/v1;kvstorev1";
+
+// KVStore 服务定义 — 这部分已经帮你写好，不用改
+service KVStore {
+  // 获取一个 key 的值
+  rpc Get(GetRequest) returns (GetResponse);
+  // 写入一个 key-value
+  rpc Put(PutRequest) returns (PutResponse);
+  // 删除一个 key
+  rpc Delete(DeleteRequest) returns (DeleteResponse);
+  // 列出所有 key（或按前缀过滤）
+  rpc List(ListRequest) returns (ListResponse);
+}
+
+message GetRequest {
+  // TODO: 需要什么字段来获取一个值？
+}
+
+message GetResponse {
+  // TODO: 返回什么？如果 key 不存在怎么办？
+}
+
+message PutRequest {
+  // TODO: 写入需要哪些字段？要不要支持 TTL（过期时间）？
+}
+
+message PutResponse {
+  // TODO: 写入成功后返回什么？
+}
+
+message DeleteRequest {
+  // TODO: 删除需要什么？
+}
+
+message DeleteResponse {
+  // TODO: 删除后返回什么？怎么表示 key 不存在的情况？
+}
+
+message ListRequest {
+  // TODO: 要不要支持按前缀过滤？分页？
+}
+
+message ListResponse {
+  // TODO: 返回什么结构？
+}
