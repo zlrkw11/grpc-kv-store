@@ -40,16 +40,31 @@ func (s *Server) Delete(ctx context.Context, req *kvstorev1.DeleteRequest) (*kvs
 
 // Watch 实现 server streaming — 客户端订阅，服务端持续推送
 // TODO: 你来实现
-//   1. 调用 s.store.Subscribe(req.Id) 拿到 event channel
-//   2. defer s.store.Unsubscribe(req.Id, ch) 清理
-//   3. for 循环从 ch 读取 event
-//   4. 每次读到 event，用 stream.Send() 发给客户端
-//   5. 如果 stream.Context().Done() 了（客户端断开），退出循环
+//  1. 调用 s.store.Subscribe(req.Id) 拿到 event channel
+//  2. defer s.store.Unsubscribe(req.Id, ch) 清理
+//  3. for 循环从 ch 读取 event
+//  4. 每次读到 event，用 stream.Send() 发给客户端
+//  5. 如果 stream.Context().Done() 了（客户端断开），退出循环
 //
 // 提示：用 select 同时监听 ch 和 ctx.Done()
 func (s *Server) Watch(req *kvstorev1.WatchRequest, stream kvstorev1.KVStore_WatchServer) error {
-	// TODO: 实现
-	return nil
+	ch := s.store.Subscribe(req.Id)
+	defer s.store.Unsubscribe(req.Id, ch)
+
+	for {
+		select {
+		case event := <-ch:
+			stream.Send(
+				&kvstorev1.WatchResponse{
+					Id:     event.Id,
+					Val:    event.Val,
+					Action: event.Action,
+				})
+		case <-stream.Context().Done():
+			return nil
+		}
+
+	}
 }
 
 func (s *Server) List(ctx context.Context, req *kvstorev1.ListRequest) (*kvstorev1.ListResponse, error) {
