@@ -1,7 +1,10 @@
 package store
 
 import (
+	"fmt"
 	"sync"
+
+	"github.com/sourcegraph/conc/pool"
 )
 
 // TODO: 实现内存 KV 存储
@@ -29,9 +32,9 @@ type Store struct {
 type Event struct {
 	// TODO: 定义字段 — 需要哪些信息来描述"发生了什么"？
 	// 提示：Id, Value, Action (比如 "PUT" 或 "DELETE")
-	id     string
-	val    string
-	action string
+	Id     string
+	Val    string
+	Action string
 }
 
 func New() *Store {
@@ -52,7 +55,7 @@ func (s *Store) Subscribe(id string) chan Event {
 	defer s.mu.Unlock()
 	ch := make(chan Event, 16)
 	s.subscribers[id] = append(s.subscribers[id], ch)
-	return nil
+	return ch
 }
 
 // Unsubscribe 移除一个订阅者并关闭 channel
@@ -82,7 +85,24 @@ func (s *Store) Unsubscribe(id string, ch chan Event) {
 // 需要的包：
 //   - "github.com/sourcegraph/conc/pool"
 func (s *Store) notify(id string, event Event) {
-	// TODO: 实现
+	p := pool.New().WithErrors()
+
+	subs := s.subscribers[id]
+	for _, ch := range subs {
+		p.Go(func() error {
+			select {
+			case ch <- event:
+				return nil
+			default:
+				return fmt.Errorf("channel full for key: %s", id)
+			}
+
+		})
+	}
+	if err := p.Wait(); err != nil {
+		fmt.Println("Error: ", err)
+	}
+
 }
 
 func (s *Store) Get(id string) (string, bool) {
@@ -96,7 +116,7 @@ func (s *Store) Put(id string, val string) string {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	s.data[id] = val
-	// TODO: 调用 s.notify(id, Event{...}) 通知订阅者
+	s.notify(id, Event{Id: id, Val: val, Action: "PUT"})
 	return val
 }
 
@@ -108,7 +128,7 @@ func (s *Store) Delete(id string) bool {
 		return false
 	}
 	delete(s.data, id)
-	// TODO: 调用 s.notify(id, Event{...}) 通知订阅者
+	s.notify(id, Event{Id: id, Val: "", Action: "DELETE"})
 	return true
 }
 
