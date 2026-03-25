@@ -15,6 +15,20 @@ service KVStore {
   rpc Delete(DeleteRequest) returns (DeleteResponse);
   // 列出所有 key（或按前缀过滤）
   rpc List(ListRequest) returns (ListResponse);
+  // 订阅一个 key 的变化，实时推送更新
+  rpc Watch(WatchRequest) returns (stream WatchResponse);
+}
+
+// TODO: 定义 WatchRequest — 客户端想监听哪个 key？
+message WatchRequest {
+  string id = 1;
+}
+
+// TODO: 定义 WatchResponse — 每次 key 变化时推送什么？
+message WatchResponse {
+  string id = 1;
+  string val = 2;
+  string action = 3;
 }
 
 message GetRequest {

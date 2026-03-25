@@ -8,27 +8,6 @@ import (
 	kvstorev1 "github.com/rayzhao/grpc-kv-store/pkg/kvstore/v1"
 )
 
-// TODO: 实现 gRPC 服务
-//
-// Server 已经帮你定义好了，你需要实现四个方法：
-//   - Get: 调用 s.store.Get()，找不到时返回 gRPC codes.NotFound 错误
-//   - Put: 调用 s.store.Put()，返回 PutResponse
-//   - Delete: 调用 s.store.Delete()，返回是否删除成功
-//   - List: 调用 s.store.List()，把 map 转成 []*kvstorev1.Pack
-//
-// 需要的包：
-//   - "google.golang.org/grpc/codes"
-//   - "google.golang.org/grpc/status"
-//
-// 示例（Get 的大致结构）：
-//   func (s *Server) Get(ctx context.Context, req *kvstorev1.GetRequest) (*kvstorev1.GetResponse, error) {
-//       val, ok := s.store.Get(req.GetId())
-//       if !ok {
-//           return nil, status.Errorf(codes.NotFound, "key %s not found", req.GetId())
-//       }
-//       return &kvstorev1.GetResponse{Value: val}, nil
-//   }
-
 type Server struct {
 	kvstorev1.UnimplementedKVStoreServer
 	store *store.Store
@@ -41,7 +20,7 @@ func New(st *store.Store) *Server {
 func (s *Server) Get(ctx context.Context, req *kvstorev1.GetRequest) (*kvstorev1.GetResponse, error) {
 	val, ok := s.store.Get(req.Id)
 	if !ok {
-		return nil, fmt.Errorf("Get(id=%s)", req.Id)
+		return nil, fmt.Errorf("key %s not found", req.Id)
 	}
 	return &kvstorev1.GetResponse{Value: val}, nil
 }
@@ -54,15 +33,26 @@ func (s *Server) Put(ctx context.Context, req *kvstorev1.PutRequest) (*kvstorev1
 func (s *Server) Delete(ctx context.Context, req *kvstorev1.DeleteRequest) (*kvstorev1.DeleteResponse, error) {
 	ok := s.store.Delete(req.Id)
 	if !ok {
-		return nil, fmt.Errorf("Delete(id=%s)", req.Id)
+		return nil, fmt.Errorf("key %s not found", req.Id)
 	}
 	return &kvstorev1.DeleteResponse{Deleted: true}, nil
 }
 
-func (s *Server) List(ctx context.Context) (*kvstorev1.ListResponse, error) {
-	if s == nil {
-		return nil, fmt.Errorf("List()")
-	}
+// Watch 实现 server streaming — 客户端订阅，服务端持续推送
+// TODO: 你来实现
+//   1. 调用 s.store.Subscribe(req.Id) 拿到 event channel
+//   2. defer s.store.Unsubscribe(req.Id, ch) 清理
+//   3. for 循环从 ch 读取 event
+//   4. 每次读到 event，用 stream.Send() 发给客户端
+//   5. 如果 stream.Context().Done() 了（客户端断开），退出循环
+//
+// 提示：用 select 同时监听 ch 和 ctx.Done()
+func (s *Server) Watch(req *kvstorev1.WatchRequest, stream kvstorev1.KVStore_WatchServer) error {
+	// TODO: 实现
+	return nil
+}
+
+func (s *Server) List(ctx context.Context, req *kvstorev1.ListRequest) (*kvstorev1.ListResponse, error) {
 	data := s.store.List()
 	items := make([]*kvstorev1.Pack, 0, len(data))
 	for k, v := range data {

@@ -1,0 +1,16 @@
+app = "grpc-kv-store"
+primary_region = "lax"
+
+[build]
+
+[[services]]
+  internal_port = 50051
+  protocol = "tcp"
+
+  [[services.ports]]
+    port = 443
+    handlers = ["tls"]
+
+  [[services.ports]]
+    port = 50051
+    handlers = []
