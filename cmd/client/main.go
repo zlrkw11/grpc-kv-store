@@ -86,8 +86,23 @@ func main() {
 		//   3. 拿到 stream 后，for 循环调用 stream.Recv()
 		//   4. 每次收到 resp，打印出来
 		//   5. err == io.EOF 时退出
-		log.Fatal("watch: not implemented yet")
+		if len(os.Args) < 3 {
+			log.Fatal("usage client watch <id>")
+		}
+		s, err := client.Watch(ctx, &kvstorev1.WatchRequest{Id: os.Args[2]})
+		if err != nil {
+			log.Fatal("watch failed: %v", err)
+		}
+		fmt.Printf("watching %v\n", os.Args[2])
 
+		for {
+
+			res, err := s.Recv()
+			if err != nil {
+				fmt.Printf("watch error: %w\n", err)
+			}
+			fmt.Printf("[%s] %s = %s\n", res.Action, res.Id, res.Val)
+		}
 	default:
 		log.Fatalf("unknown command: %s", os.Args[1])
 	}
