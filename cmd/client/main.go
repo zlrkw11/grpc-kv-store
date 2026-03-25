@@ -89,9 +89,9 @@ func main() {
 		if len(os.Args) < 3 {
 			log.Fatal("usage client watch <id>")
 		}
-		s, err := client.Watch(ctx, &kvstorev1.WatchRequest{Id: os.Args[2]})
+		s, err := client.Watch(context.Background(), &kvstorev1.WatchRequest{Id: os.Args[2]})
 		if err != nil {
-			log.Fatal("watch failed: %v", err)
+			log.Fatalf("watch failed: %v", err)
 		}
 		fmt.Printf("watching %v\n", os.Args[2])
 
@@ -99,7 +99,7 @@ func main() {
 
 			res, err := s.Recv()
 			if err != nil {
-				fmt.Printf("watch error: %w\n", err)
+				fmt.Printf("watch error: %v\n", err)
 			}
 			fmt.Printf("[%s] %s = %s\n", res.Action, res.Id, res.Val)
 		}
