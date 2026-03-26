@@ -75,3 +75,13 @@ func (s *Server) List(ctx context.Context, req *kvstorev1.ListRequest) (*kvstore
 	}
 	return &kvstorev1.ListResponse{Items: items}, nil
 }
+
+func (s *Server) Exists(ctx context.Context, req *kvstorev1.ExistsRequest) (*kvstorev1.ExistsResponse, error) {
+	res := s.store.Exists(req.Id)
+	return &kvstorev1.ExistsResponse{Res: res}, nil
+}
+
+func (s *Server) Count(ctx context.Context, req *kvstorev1.CountRequest) (*kvstorev1.CountResponse, error) {
+	res := s.store.Count()
+	return &kvstorev1.CountResponse{Count: res}, nil
+}

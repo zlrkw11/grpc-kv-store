@@ -17,6 +17,8 @@ service KVStore {
   rpc List(ListRequest) returns (ListResponse);
   // 订阅一个 key 的变化，实时推送更新
   rpc Watch(WatchRequest) returns (stream WatchResponse);
+  rpc Exists(ExistsRequest) returns (ExistsResponse);
+  rpc Count(CountRequest) returns (CountResponse);
 }
 
 // TODO: 定义 WatchRequest — 客户端想监听哪个 key？
@@ -60,6 +62,21 @@ message ListRequest {}
 
 message ListResponse {
   repeated Pack items = 1;
+}
+
+message ExistsRequest {
+  string id = 1;
+}
+
+message ExistsResponse {
+  bool res = 1;
+}
+
+message CountRequest {}
+
+message CountResponse {
+  string id = 1;
+  int32 count = 2;
 }
 
 message Pack {

@@ -103,6 +103,17 @@ func main() {
 			}
 			fmt.Printf("[%s] %s = %s\n", res.Action, res.Id, res.Val)
 		}
+
+	case "exists":
+		if len(os.Args) < 3 {
+			log.Fatalf("usage client watch <id>")
+		}
+		resp, err := client.Exists(ctx, &kvstorev1.ExistsRequest{Id: os.Args[2]})
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+		fmt.Printf("%v\n", resp.Res)
+
 	default:
 		log.Fatalf("unknown command: %s", os.Args[1])
 	}

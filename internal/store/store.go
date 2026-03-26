@@ -141,3 +141,20 @@ func (s *Store) List() map[string]string {
 	}
 	return res
 }
+
+func (s *Store) Exists(key string) bool {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	_, ok := s.data[key]
+	if !ok {
+		return false
+	}
+	return true
+}
+
+func (s *Store) Count() int32 {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	res := int32(len(s.data))
+	return res
+}
